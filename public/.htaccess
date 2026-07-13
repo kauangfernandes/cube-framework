@@ -1,0 +1,34 @@
+# Verifica se o módulo de reescrita de URL está ativo no servidor
+<IfModule mod_rewrite.c>
+    
+    # Configurações extras de segurança e comportamento
+    <IfModule mod_negotiation.c>
+        # -MultiViews: Evita que o Apache tente adivinhar extensões de arquivos
+        # -Indexes: Bloqueia o usuário de ver a lista de arquivos das pastas
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    # Liga o motor de reescrita de URLs
+    RewriteEngine On
+
+    # Garante que o PHP consiga ler o cabeçalho de autenticação (Tokens, JWT, etc.)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Garante que o PHP consiga ler o token de segurança contra ataques XSRF
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Se a URL terminar com uma barra (ex: /contato/) e NÃO for uma pasta real,
+    # ele remove a barra e redireciona (ex: /contato) para ajudar no SEO
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # O "Coração" do roteamento: Se o que o usuário digitou NÃO for uma pasta real
+    # e NÃO for um arquivo real (como imagem ou CSS), envia a requisição para o index.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+    
+</IfModule>
