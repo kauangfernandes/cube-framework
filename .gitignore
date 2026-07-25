@@ -21,3 +21,5 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+# Ignore the .env file for sensitive information
+*.env
